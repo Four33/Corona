@@ -1,4 +1,4 @@
-# To retreive data from European Centre for Disease Prevention and Control
+# To retrieve data from European Centre for Disease Prevention and Control
 # source: https://www.ecdc.europa.eu/en/publications-data/download-todays-data-geographic-distribution-covid-19-cases-worldwide
 
 ## housekeeping
