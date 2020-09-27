@@ -1,0 +1,65 @@
+---
+title: "ETL-process for retrieval of ECDC Corona-data"
+author: "G. Versteeg"
+date: "27/09/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+This is an ETL Markdown document, to retrieve corona data from ECDC. 
+
+The European Centre for Disease Prevention and Control is located at:
+source: https://www.ecdc.europa.eu/en/publications-data/download-todays-data-geographic-distribution-covid-19-cases-worldwide
+
+We will schedule this retrieval weekly and pin the resulting dataset ont a RS-Connect board.
+
+## Housekeeping
+
+```{r housekeeping}
+## housekeeping
+library(utils)
+library(httr)
+library(tidyverse)
+library(pins)
+
+# Register the RS-Connect board
+# Pins will use CONNECT_API_KEY and CONNECT_SERVER by default,
+# but we are being explicit here anyway.
+pins::board_register_rsconnect(
+  key = Sys.getenv("CONNECT_API_KEY"), 
+  server = Sys.getenv("CONNECT_SERVER")
+)
+
+```
+
+
+## Getting and cleaning the data
+
+Download the dataset from ECDC to a local temporary file and copy into DF data
+
+```{r}
+## get dataset
+GET("https://opendata.ecdc.europa.eu/covid19/casedistribution/csv", 
+    authenticate(":", ":", type="ntlm"), 
+    write_disk(tf <- tempfile(fileext = ".csv")))
+data <- read.csv(tf)
+
+## clean dataset
+df_cln <- data %>%
+  mutate(Rpt_date = as.Date(as.character(dateRep), "%d/%m/%Y")) %>% 
+  mutate(Cont_rate = cases / popData2019 * 100)
+
+```
+
+## Pinning the resulting dataset to a board
+
+```{r}
+pins::pin(df_cln, name = "pin_corona", 
+          description = "Weekly corona data from ECDC", board = "rsconnect")
+```
+
