@@ -15,5 +15,6 @@ data <- read.csv(tf)
 ## clean dataset
 df_cln <- data %>%
   mutate(Rpt_date = as.Date(as.character(dateRep), "%d/%m/%Y")) %>% 
-  mutate(Cont_rate = cases / popData2018 * 100)
+  mutate(Cont_rate = cases / popData2019 * 100)
+
 
