@@ -2,7 +2,7 @@
 title: "ETL-process for retrieval of ECDC Corona-data"
 author: "G. Versteeg"
 date: "27/09/2020"
-output: html_document
+output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
@@ -25,15 +25,8 @@ We will schedule this retrieval weekly and pin the resulting dataset ont a RS-Co
 library(utils)
 library(httr)
 library(tidyverse)
-library(pins)
 
-# Register the RS-Connect board
-# Pins will use CONNECT_API_KEY and CONNECT_SERVER by default,
-# but we are being explicit here anyway.
-pins::board_register_rsconnect(
-  key = Sys.getenv("CONNECT_API_KEY"), 
-  server = Sys.getenv("CONNECT_SERVER")
-)
+
 
 ```
 
@@ -50,16 +43,41 @@ GET("https://opendata.ecdc.europa.eu/covid19/casedistribution/csv",
 data <- read.csv(tf)
 
 ## clean dataset
-df_cln <- data %>%
   mutate(Rpt_date = as.Date(as.character(dateRep), "%d/%m/%Y")) %>% 
   mutate(Cont_rate = cases / popData2019 * 100)
 
 ```
 
-## Pinning the resulting dataset to a board
+```{r}
+
+df_cln <- data
+df_cln
+
+```
+
+## Plotting the resulting dataset 
 
 ```{r}
-pins::pin(df_cln, name = "pin_corona", 
-          description = "Weekly corona data from ECDC", board = "rsconnect")
+
+  ## plotting the data
+  df_cln %>% 
+    filter(countriesAndTerritories == "Netherlands") %>% 
+    ggplot(aes(Rpt_date, Cont_rate)) +
+  geom_col() +
+  scale_y_continuous(labels = scales::percent_format())
+
+...
+
+
+
+
+```
+
+```{r}
+df_cln %>% 
+    filter(countriesAndTerritories == "Netherlands","Germany")) 
+```
+
+
 ```
 
